@@ -1,0 +1,94 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <android.support.design.widget.TextInputLayout
+        android:id="@+id/latitude_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/edit_field_box"
+        android:paddingTop="16dp">
+
+        <android.support.design.widget.TextInputEditText
+            android:id="@+id/latitude_prompt"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:ems="10"
+            android:hint="@string/geofence_lat"
+            android:imeOptions="actionNext"
+            android:inputType="numberDecimal"
+            android:maxLines="1"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"/>
+
+    </android.support.design.widget.TextInputLayout>
+
+    <android.support.design.widget.TextInputLayout
+        android:id="@+id/longitude_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/edit_field_box"
+        android:paddingTop="12dp">
+
+        <android.support.design.widget.TextInputEditText
+            android:id="@+id/longitude_prompt"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:ems="10"
+            android:hint="@string/geofence_lon"
+            android:imeOptions="actionNext"
+            android:inputType="numberDecimal"
+            android:maxLines="1"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"/>
+
+    </android.support.design.widget.TextInputLayout>
+
+    <android.support.design.widget.TextInputLayout
+        android:id="@+id/radius_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/edit_field_box"
+        android:paddingTop="12dp">
+
+        <android.support.design.widget.TextInputEditText
+            android:id="@+id/radius_prompt"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:ems="10"
+            android:hint="@string/geofence_radius"
+            android:imeOptions="actionNext"
+            android:inputType="numberDecimal"
+            android:maxLines="1"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"/>
+
+    </android.support.design.widget.TextInputLayout>
+
+    <Button
+        android:id="@+id/set_geofence_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginTop="16dp"
+        android:text="@string/set_geofence"/>
+
+    <TextView
+        android:id="@+id/geofence_status_view"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:layout_marginTop="16dp"
+        android:background="@color/outside"
+        android:textAlignment="gravity"
+        android:gravity="center"
+        android:text="@string/geofence_outside"
+        android:textSize="24sp"
+        android:textAllCaps="true"/>
+
+</LinearLayout>
