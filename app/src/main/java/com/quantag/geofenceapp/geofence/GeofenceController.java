@@ -3,6 +3,7 @@ package com.quantag.geofenceapp.geofence;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.widget.Toast;
@@ -26,12 +27,14 @@ public class GeofenceController {
     private GeofencingClient    mGeofencingClient;
     private ArrayList<Geofence> mGeofenceList;
     private PendingIntent       mGeofencePendingIntent;
+    private SharedPreferences   sPrefs;
 
     public GeofenceController(Context context) {
         mContext = context;
         mGeofenceList = new ArrayList<>();
         mGeofencingClient = LocationServices.getGeofencingClient(context);
         mGeofencePendingIntent = null;
+        sPrefs = context.getSharedPreferences(Constants.PREFS, Context.MODE_PRIVATE);
     }
 
     /**
@@ -135,5 +138,13 @@ public class GeofenceController {
                         Log.w(TAG, msg);
                     }
                 });
+    }
+
+    public void setInsideStatus(boolean inside) {
+        sPrefs.edit().putBoolean(Constants.ARG_INSIDE_GEOFENCE, inside).apply();
+    }
+
+    public boolean isInside() {
+        return sPrefs.getBoolean(Constants.ARG_INSIDE_GEOFENCE, false);
     }
 }

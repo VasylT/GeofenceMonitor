@@ -2,6 +2,7 @@
 <resources>
     <dimen name="location_fab_transition_height">64dp</dimen>
     <dimen name="geofence_fab_transition_height">116dp</dimen>
+    <dimen name="wifi_fab_transition_height">168dp</dimen>
 
     <dimen name="fab_hint_margin">16dp</dimen>
     <dimen name="fab_hint_padding">4dp</dimen>

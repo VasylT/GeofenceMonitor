@@ -25,6 +25,8 @@ public class ConnectivityMonitorService extends Service {
     public void onCreate() {
         Log.d(TAG, "onCreate");
         super.onCreate();
+
+        // Create connectivity receiver.
         mConnectivityReceiver = new ConnectivityReceiver(this, new ConnectivityReceiver.IConnectivity() {
             @Override
             public void onConnected(NetworkInfo networkInfo) {
@@ -39,7 +41,7 @@ public class ConnectivityMonitorService extends Service {
             }
         });
 
-        // Get connectivity notifications.
+        // Register receiver to connectivity change events.
         IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
         registerReceiver(mConnectivityReceiver, filter);
     }

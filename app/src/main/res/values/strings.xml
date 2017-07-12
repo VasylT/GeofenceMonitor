@@ -2,12 +2,14 @@
     <string name="app_name">GeofenceApp</string>
 
     <string name="get_location">Get marker location</string>
+    <string name="set_wifi">Set wifi spot</string>
     <string name="set_geofence">Set geofence</string>
     <string name="geofences_set">Geofences set</string>
 
     <string name="geofence_lat">Latitude</string>
     <string name="geofence_lon">Longitude</string>
     <string name="geofence_radius">Radius (metres)</string>
+    <string name="wifi_name">Geofence: %1$s</string>
 
     <string name="geofence_inside">Inside</string>
     <string name="geofence_outside">Outside</string>

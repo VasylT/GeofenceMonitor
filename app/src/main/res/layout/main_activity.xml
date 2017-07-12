@@ -7,6 +7,24 @@
     android:orientation="vertical">
 
     <android.support.design.widget.FloatingActionButton
+        android:id="@+id/set_wifi_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:backgroundTint="@color/wifi_fab_bg"
+        android:src="@drawable/ic_network_wifi_white_24dp"
+        app:borderWidth="0dp"
+        app:fabSize="mini"
+        app:layout_constraintBottom_toTopOf="@+id/shadow_view"
+        app:layout_constraintLeft_toLeftOf="@+id/menu_button"
+        app:layout_constraintRight_toRightOf="@+id/menu_button"
+        app:layout_constraintTop_toTopOf="@+id/shadow_view"
+        app:layout_constraintVertical_bias="0.5"
+        tools:ignore="UnusedAttribute"
+        tools:translationY="@dimen/wifi_fab_transition_height"/>
+
+    <android.support.design.widget.FloatingActionButton
         android:id="@+id/set_geofence_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -84,10 +102,25 @@
         android:textAllCaps="true"
         android:textSize="18sp"
         android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/latitude_layout"
+        app:layout_constraintBottom_toTopOf="@+id/wifi_name_view"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"/>
 
+    <TextView
+        android:id="@+id/wifi_name_view"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:maxLines="1"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        android:paddingTop="16dp"
+        android:textSize="16sp"
+        android:background="@android:color/white"
+        app:layout_constraintBottom_toTopOf="@+id/latitude_layout"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        tools:text="Wi-Fi Spot"/>
 
     <android.support.design.widget.TextInputLayout
         android:id="@+id/latitude_layout"
@@ -146,8 +179,8 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:background="@drawable/edit_field_box"
-        android:paddingBottom="8dp"
         android:paddingTop="4dp"
+        android:paddingBottom="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent">
@@ -169,7 +202,7 @@
     </android.support.design.widget.TextInputLayout>
 
     <TextView
-        android:id="@+id/set_location_hint_view"
+        android:id="@+id/get_location_hint_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="@dimen/fab_hint_margin"
@@ -206,6 +239,26 @@
         app:layout_constraintTop_toTopOf="@+id/set_geofence_button"
         tools:alpha="1.0"
         tools:translationY="@dimen/geofence_fab_transition_height"
+        tools:visibility="visible"/>
+
+    <TextView
+        android:id="@+id/set_wifi_hint_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/fab_hint_margin"
+        android:layout_marginRight="@dimen/fab_hint_margin"
+        android:alpha="0.0"
+        android:background="@color/hint_view_bg"
+        android:padding="@dimen/fab_hint_padding"
+        android:text="@string/set_wifi"
+        android:textAllCaps="true"
+        android:textSize="@dimen/fab_hint_text_size"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/set_wifi_button"
+        app:layout_constraintRight_toLeftOf="@+id/set_wifi_button"
+        app:layout_constraintTop_toTopOf="@+id/set_wifi_button"
+        tools:alpha="1.0"
+        tools:translationY="@dimen/wifi_fab_transition_height"
         tools:visibility="visible"/>
 
 </android.support.constraint.ConstraintLayout>

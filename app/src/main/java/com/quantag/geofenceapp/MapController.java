@@ -41,6 +41,7 @@ public class MapController {
     public MapController(Context context, MapView mapView) {
         this.context = context;
         this.mapView = mapView;
+        sPrefs = context.getSharedPreferences(Constants.PREFS, Context.MODE_PRIVATE);
     }
 
     public void onResume() {
@@ -242,7 +243,6 @@ public class MapController {
      * Get the last pointed location from shared preferences and saves its coordinates.
      */
     private void restoreLastLocation() {
-        sPrefs = context.getSharedPreferences(Constants.PREFS, Context.MODE_PRIVATE);
         latitude = sPrefs.getFloat(Constants.ARG_LAT, (float) Constants.DEFAULT_LAT);
         longitude = sPrefs.getFloat(Constants.ARG_LON, (float) Constants.DEFAULT_LON);
     }

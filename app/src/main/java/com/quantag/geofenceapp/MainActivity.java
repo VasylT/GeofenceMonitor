@@ -42,11 +42,14 @@ public class MainActivity extends AppCompatActivity implements IGeofenceEventsRe
     private TextInputEditText    latitudePrompt;
     private TextInputEditText    longitudePrompt;
     private TextInputEditText    radiusPrompt;
+    private TextView             wifiView;
     private TextView             geofenceStatusView;
     private FloatingActionButton geofenceSetButton;
     private FloatingActionButton locationGetButton;
+    private FloatingActionButton wifiSetButton;
     private TextView             geofenceSetHintView;
-    private TextView             locationSetHintView;
+    private TextView             locationGetHintView;
+    private TextView             wifiSetHintView;
 
     private boolean isMenuOpened  = false;
     private boolean isMenuOpening = false;
@@ -69,18 +72,23 @@ public class MainActivity extends AppCompatActivity implements IGeofenceEventsRe
         latitudePrompt = (TextInputEditText) findViewById(R.id.latitude_prompt);
         longitudePrompt = (TextInputEditText) findViewById(R.id.longitude_prompt);
         radiusPrompt = (TextInputEditText) findViewById(R.id.radius_prompt);
+        wifiView = (TextView) findViewById(R.id.wifi_name_view);
         geofenceStatusView = (TextView) findViewById(R.id.geofence_status_view);
         geofenceSetButton = (FloatingActionButton) findViewById(R.id.set_geofence_button);
         locationGetButton = (FloatingActionButton) findViewById(R.id.get_location_button);
+        wifiSetButton = (FloatingActionButton) findViewById(R.id.set_wifi_button);
         geofenceSetHintView = (TextView) findViewById(R.id.set_geofence_hint_view);
-        locationSetHintView = (TextView) findViewById(R.id.set_location_hint_view);
+        locationGetHintView = (TextView) findViewById(R.id.get_location_hint_view);
+        wifiSetHintView = (TextView) findViewById(R.id.set_wifi_hint_view);
         FloatingActionButton menuButton = (FloatingActionButton) findViewById(R.id.menu_button);
         MapView mapView = (MapView) findViewById(R.id.map_view);
 
+        // Make edit fields be prepared for errors.
         latitudeLayout.setErrorEnabled(true);
         longitudeLayout.setErrorEnabled(true);
         radiusLayout.setErrorEnabled(true);
 
+        // Display default geofence coordinates.
         latitudePrompt.setText(String.valueOf(Constants.DEFAULT_LAT));
         longitudePrompt.setText(String.valueOf(Constants.DEFAULT_LON));
         radiusPrompt.setText(String.valueOf(Constants.DEFAULT_RADIUS));
@@ -96,6 +104,13 @@ public class MainActivity extends AppCompatActivity implements IGeofenceEventsRe
             @Override
             public void onClick(View v) {
                 getCurrentMapLocation();
+            }
+        });
+
+        wifiSetButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                connectivityController.startWiFiPicker();
             }
         });
 
@@ -125,9 +140,14 @@ public class MainActivity extends AppCompatActivity implements IGeofenceEventsRe
             }
         });
 
+        // Init controllers.
         mapController = new MapController(this, mapView);
         geofenceController = new GeofenceController(this);
         connectivityController = new ConnectivityController(this);
+
+        // Display wifi name.
+        String wifiName = connectivityController.getGeofenceWiFiName();
+        displayWiFiName(wifiName);
     }
 
     @Override
@@ -145,10 +165,11 @@ public class MainActivity extends AppCompatActivity implements IGeofenceEventsRe
     @Override
     public void onResume() {
         super.onResume();
+        mapController.onResume();
         geoEventsReceiver.register(this);
         connEventsReceiver.register(this);
-        mapController.onResume();
         connectivityController.startServiceIfNeeded();
+        considerGeofenceStatus();
     }
 
     @Override
@@ -173,56 +194,40 @@ public class MainActivity extends AppCompatActivity implements IGeofenceEventsRe
 
     @Override
     public void onEnterGeofence() {
-        toggleGeofenceStatus(true);
+        Log.i(TAG, "enter geofence");
+        geofenceController.setInsideStatus(true);
+        considerGeofenceStatus();
     }
 
     @Override
     public void onExitGeofence() {
-        toggleGeofenceStatus(false);
+        Log.i(TAG, "exit geofence");
+        geofenceController.setInsideStatus(false);
+        considerGeofenceStatus();
     }
 
     @Override
     public void onConnected(String extraInfo) {
         Log.i(TAG, "network connected to: " + extraInfo);
+        boolean isNewWiFi = connectivityController.onConnected(extraInfo);
+        if (isNewWiFi) {
+            displayWiFiName(extraInfo);
+        }
+        considerGeofenceStatus();
     }
 
     @Override
     public void onDisconnected() {
         Log.i(TAG, "network disconnected");
+        connectivityController.onDisconnected();
+        considerGeofenceStatus();
     }
 
-    private void openMenu() {
-        isMenuOpened = true;
-        float geofenceRange = -getResources().getDimension(R.dimen.geofence_fab_transition_height);
-        float locationRange = -getResources().getDimension(R.dimen.location_fab_transition_height);
-
-        // Animate FABs
-        geofenceSetButton.animate().translationY(geofenceRange);
-        locationGetButton.animate().translationY(locationRange);
-
-        // Animate hint views
-        geofenceSetHintView.animate().translationY(geofenceRange);
-        locationSetHintView.animate().translationY(locationRange);
-        geofenceSetHintView.animate().alpha(1.0f);
-        locationSetHintView.animate().alpha(1.0f);
-        geofenceSetHintView.setVisibility(View.VISIBLE);
-        locationSetHintView.setVisibility(View.VISIBLE);
-    }
-
-    private void closeMenu() {
-        isMenuOpened = false;
-
-        // Animate FABs
-        geofenceSetButton.animate().translationY(0);
-        locationGetButton.animate().translationY(0);
-
-        // Animate hint views
-        geofenceSetHintView.animate().translationY(0);
-        locationSetHintView.animate().translationY(0);
-        geofenceSetHintView.animate().alpha(0.0f);
-        locationSetHintView.animate().alpha(0.0f);
-        geofenceSetHintView.setVisibility(View.GONE);
-        locationSetHintView.setVisibility(View.GONE);
+    private void considerGeofenceStatus() {
+        Log.i(TAG, "consider connected: " + connectivityController.isConnected()
+                + " inside: " + geofenceController.isInside());
+        boolean isInside = connectivityController.isConnected() || geofenceController.isInside();
+        toggleGeofenceStatus(isInside);
     }
 
     private void toggleGeofenceButton(boolean enable) {
@@ -239,10 +244,58 @@ public class MainActivity extends AppCompatActivity implements IGeofenceEventsRe
         }
     }
 
+    private void displayWiFiName(String name) {
+        String title = String.format(getResources().getString(R.string.wifi_name), name);
+        wifiView.setText(title);
+    }
+
     private void getCurrentMapLocation() {
         LatLng latLng = mapController.getCurrentLocation();
         latitudePrompt.setText(String.valueOf(latLng.latitude));
         longitudePrompt.setText(String.valueOf(latLng.longitude));
+    }
+
+    private void openMenu() {
+        isMenuOpened = true;
+        float geofenceRange = -getResources().getDimension(R.dimen.geofence_fab_transition_height);
+        float locationRange = -getResources().getDimension(R.dimen.location_fab_transition_height);
+        float wifiRange = -getResources().getDimension(R.dimen.wifi_fab_transition_height);
+
+        // Animate FABs
+        geofenceSetButton.animate().translationY(geofenceRange);
+        locationGetButton.animate().translationY(locationRange);
+        wifiSetButton.animate().translationY(wifiRange);
+
+        // Animate hint views
+        geofenceSetHintView.animate().translationY(geofenceRange);
+        locationGetHintView.animate().translationY(locationRange);
+        wifiSetHintView.animate().translationY(wifiRange);
+        geofenceSetHintView.animate().alpha(1.0f);
+        locationGetHintView.animate().alpha(1.0f);
+        wifiSetHintView.animate().alpha(1.0f);
+        geofenceSetHintView.setVisibility(View.VISIBLE);
+        locationGetHintView.setVisibility(View.VISIBLE);
+        wifiSetHintView.setVisibility(View.VISIBLE);
+    }
+
+    private void closeMenu() {
+        isMenuOpened = false;
+
+        // Animate FABs
+        geofenceSetButton.animate().translationY(0);
+        locationGetButton.animate().translationY(0);
+        wifiSetButton.animate().translationY(0);
+
+        // Animate hint views
+        geofenceSetHintView.animate().translationY(0);
+        locationGetHintView.animate().translationY(0);
+        wifiSetHintView.animate().translationY(0);
+        geofenceSetHintView.animate().alpha(0.0f);
+        locationGetHintView.animate().alpha(0.0f);
+        wifiSetHintView.animate().alpha(0.0f);
+        geofenceSetHintView.setVisibility(View.GONE);
+        locationGetHintView.setVisibility(View.GONE);
+        wifiSetHintView.setVisibility(View.GONE);
     }
 
     private void validateEditFields() {

@@ -16,6 +16,10 @@ public class Constants {
     public static final String PREFS               = "map.preferences";
     public static final String ARG_LAT             = "arg.latitude";
     public static final String ARG_LON             = "arg.longitude";
+    public static final String ARG_INSIDE_GEOFENCE = "arg.geofence.inside";
+    public static final String ARG_WIFI_NAME       = "arg.wifi.name";
+    public static final String ARG_WIFI_ADDED      = "arg.wifi.added";
+    public static final String ARG_WIFI_CONNECTED  = "arg.wifi.connected";
     public static final int    MSG_ENTER           = 201;
     public static final int    MSG_EXIT            = 202;
     public static final int    MSG_CONNECTED       = 203;

@@ -8,5 +8,6 @@
 
     <color name="inside">@color/colorPrimaryLight</color>
     <color name="outside">#B0BEC5</color>
+    <color name="wifi_fab_bg">#4FC3F7</color>
     <color name="hint_view_bg">#ECEFF1</color>
 </resources>
