@@ -8,14 +8,18 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputEditText;
+import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
-import android.widget.Button;
+import android.view.inputmethod.EditorInfo;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -30,42 +34,53 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String TAG                      = MainActivity.class.getSimpleName();
-    private static final String GEOFENCE_KEY             = "MAIN_GEO";
-    private static final int    LOCATION_PERMISSIONS_RC  = 101;
-    private static final long   GEOFENCE_EXPIRATION_TIME = 10 * 60 * 1000;
+    private static final String TAG = MainActivity.class.getSimpleName();
 
     private GeofencingClient    mGeofencingClient;
     private ArrayList<Geofence> mGeofenceList;
     private PendingIntent       mGeofencePendingIntent;
 
-    private TextInputEditText latitudePrompt;
-    private TextInputEditText longitudePrompt;
-    private TextInputEditText radiusPrompt;
-    private Button            setGeofenceButton;
-    private TextView          geofenceStatusView;
+    private TextInputLayout      latitudeLayout;
+    private TextInputLayout      longitudeLayout;
+    private TextInputLayout      radiusLayout;
+    private TextInputEditText    latitudePrompt;
+    private TextInputEditText    longitudePrompt;
+    private TextInputEditText    radiusPrompt;
+    private FloatingActionButton geofenceSetButton;
+    private TextView             geofenceStatusView;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity);
+        latitudeLayout = (TextInputLayout) findViewById(R.id.latitude_layout);
+        longitudeLayout = (TextInputLayout) findViewById(R.id.longitude_layout);
+        radiusLayout = (TextInputLayout) findViewById(R.id.radius_layout);
         latitudePrompt = (TextInputEditText) findViewById(R.id.latitude_prompt);
         longitudePrompt = (TextInputEditText) findViewById(R.id.longitude_prompt);
         radiusPrompt = (TextInputEditText) findViewById(R.id.radius_prompt);
-        setGeofenceButton = (Button) findViewById(R.id.set_geofence_button);
+        geofenceSetButton = (FloatingActionButton) findViewById(R.id.set_geofence_button);
         geofenceStatusView = (TextView) findViewById(R.id.geofence_status_view);
 
         mGeofenceList = new ArrayList<>();
         mGeofencingClient = LocationServices.getGeofencingClient(this);
         mGeofencePendingIntent = null;
 
-        setGeofenceButton.setOnClickListener(new View.OnClickListener() {
+        geofenceSetButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                double latitude = Double.valueOf(latitudePrompt.getText().toString());
-                double longitude = Double.valueOf(longitudePrompt.getText().toString());
-                float radius = Float.valueOf(radiusPrompt.getText().toString());
-                updateGeofence(latitude, longitude, radius);
+                validateEditFields();
+            }
+        });
+
+        radiusPrompt.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
+                if (id == EditorInfo.IME_ACTION_DONE) {
+                    validateEditFields();
+                    return true;
+                }
+                return false;
             }
         });
     }
@@ -81,15 +96,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void toggleGeofenceButton(boolean enable) {
-        setGeofenceButton.setEnabled(enable);
+        geofenceSetButton.setEnabled(enable);
     }
 
     private void toggleGeofenceStatus(boolean inside) {
         if (inside) {
-            geofenceStatusView.setBackgroundColor(ContextCompat.getColor(this,R.color.inside));
+            geofenceStatusView.setBackgroundColor(ContextCompat.getColor(this, R.color.inside));
             geofenceStatusView.setText(R.string.geofence_inside);
         } else {
-            geofenceStatusView.setBackgroundColor(ContextCompat.getColor(this,R.color.outside));
+            geofenceStatusView.setBackgroundColor(ContextCompat.getColor(this, R.color.outside));
             geofenceStatusView.setText(R.string.geofence_outside);
         }
     }
@@ -97,19 +112,20 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Add new circular area geofence based on the given parameters.
      * Also sets expiration time and monitored transitions.
-
-     * @param key    request ID of the geofence.
-     * @param latitude latitude of geographical coordinates of the geofence.
+     *
+     * @param key       request ID of the geofence.
+     * @param latitude  latitude of geographical coordinates of the geofence.
      * @param longitude longitude of geographical coordinates of the geofence.
-     * @param radius geofence radius in meters.
+     * @param radius    geofence radius in meters.
      */
     private void populateGeofenceList(String key, double latitude, double longitude, float radius) {
+        Log.i(TAG, "add geofence area: " + latitude + ":" + longitude);
         mGeofenceList.add(new Geofence.Builder()
                 .setRequestId(key)
                 .setCircularRegion(latitude, longitude, radius)
                 .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER |
                         Geofence.GEOFENCE_TRANSITION_EXIT)
-                .setExpirationDuration(GEOFENCE_EXPIRATION_TIME)
+                .setExpirationDuration(Constants.GEOFENCE_EXPIRATION_TIME)
                 .build());
     }
 
@@ -118,6 +134,7 @@ public class MainActivity extends AppCompatActivity {
      * Also specifies how the geofence notifications are initially triggered.
      */
     private GeofencingRequest getGeofencingRequest() {
+        Log.i(TAG, "number of geofences:" + mGeofenceList.size());
         return new GeofencingRequest.Builder()
                 .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
                 .addGeofences(mGeofenceList)
@@ -186,9 +203,30 @@ public class MainActivity extends AppCompatActivity {
     private void updateGeofence(double latitude, double longitude, float radius) {
         removeGeofences();
         mGeofenceList.clear();
-        populateGeofenceList(GEOFENCE_KEY, latitude, longitude, radius);
+        populateGeofenceList(Constants.GEOFENCE_KEY, latitude, longitude, radius);
         addGeofences();
+    }
 
+    private void validateEditFields() {
+        if (checkEditField(latitudePrompt, latitudeLayout)
+                && checkEditField(longitudePrompt, longitudeLayout)
+                && checkEditField(radiusPrompt, radiusLayout)) {
+            double latitude = Double.valueOf(latitudePrompt.getText().toString());
+            double longitude = Double.valueOf(longitudePrompt.getText().toString());
+            float radius = Float.valueOf(radiusPrompt.getText().toString());
+            updateGeofence(latitude, longitude, radius);
+        }
+    }
+
+    private boolean checkEditField(TextInputEditText inputEditText, TextInputLayout inputLayout) {
+        boolean valid = false;
+        if (TextUtils.isEmpty(inputEditText.getText().toString())) {
+            inputLayout.setError(getResources().getString(R.string.field_is_empty));
+        } else {
+            inputLayout.setError(null);
+            valid = true;
+        }
+        return valid;
     }
 
     private boolean checkPermissions() {
@@ -211,21 +249,21 @@ public class MainActivity extends AppCompatActivity {
                         public void onClick(View view) {
                             ActivityCompat.requestPermissions(MainActivity.this,
                                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                                    LOCATION_PERMISSIONS_RC);
+                                    Constants.LOCATION_PERMISSIONS_RC);
                         }
                     }).show();
         } else {
             // Requesting permission
             ActivityCompat.requestPermissions(MainActivity.this,
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    LOCATION_PERMISSIONS_RC);
+                    Constants.LOCATION_PERMISSIONS_RC);
         }
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
-        if (requestCode == LOCATION_PERMISSIONS_RC) {
+        if (requestCode == Constants.LOCATION_PERMISSIONS_RC) {
             if (grantResults.length > 0) {
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     // Permission granted
