@@ -107,7 +107,6 @@
         android:id="@+id/radius_layout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="3dp"
         android:background="@drawable/edit_field_box"
         android:paddingBottom="8dp"
         android:paddingTop="4dp"
