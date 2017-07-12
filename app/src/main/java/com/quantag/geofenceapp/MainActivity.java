@@ -19,6 +19,9 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.TextView;
+
+import com.google.android.gms.maps.MapView;
+import com.google.android.gms.maps.model.LatLng;
 import com.quantag.geofenceapp.GeofenceEventsReceiver.IGeofenceEventsReceiver;
 
 public class MainActivity extends AppCompatActivity implements IGeofenceEventsReceiver {
@@ -37,6 +40,8 @@ public class MainActivity extends AppCompatActivity implements IGeofenceEventsRe
     private GeofenceController geofenceController;
     private GeofenceEventsReceiver geofenceEventsReceiver = new GeofenceEventsReceiver(this);
 
+    private MapController mapController;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -49,6 +54,7 @@ public class MainActivity extends AppCompatActivity implements IGeofenceEventsRe
         radiusPrompt = (TextInputEditText) findViewById(R.id.radius_prompt);
         geofenceSetButton = (FloatingActionButton) findViewById(R.id.set_geofence_button);
         geofenceStatusView = (TextView) findViewById(R.id.geofence_status_view);
+        MapView mapView = (MapView)  findViewById(R.id.map_view);
 
         latitudeLayout.setErrorEnabled(true);
         longitudeLayout.setErrorEnabled(true);
@@ -61,6 +67,7 @@ public class MainActivity extends AppCompatActivity implements IGeofenceEventsRe
         geofenceSetButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                getCurrentMapLocation();
                 validateEditFields();
             }
         });
@@ -77,6 +84,7 @@ public class MainActivity extends AppCompatActivity implements IGeofenceEventsRe
         });
 
         geofenceController = new GeofenceController(this);
+        mapController = new MapController(this, mapView);
     }
 
     @Override
@@ -86,6 +94,8 @@ public class MainActivity extends AppCompatActivity implements IGeofenceEventsRe
         toggleGeofenceButton(permissionGranted);
         if (!permissionGranted) {
             requestPermissions();
+        } else {
+            mapController.initializeMap();
         }
     }
 
@@ -93,12 +103,26 @@ public class MainActivity extends AppCompatActivity implements IGeofenceEventsRe
     public void onResume() {
         super.onResume();
         geofenceEventsReceiver.register(this);
+        mapController.onResume();
     }
 
     @Override
     public void onPause() {
         super.onPause();
         geofenceEventsReceiver.unregister(this);
+        mapController.onPause();
+    }
+
+    @Override
+    public void onLowMemory() {
+        super.onLowMemory();
+        mapController.onLowMemory();
+    }
+
+    @Override
+    public void onDestroy() {
+        mapController.onDestroy();
+        super.onDestroy();
     }
 
     @Override
@@ -123,6 +147,12 @@ public class MainActivity extends AppCompatActivity implements IGeofenceEventsRe
             geofenceStatusView.setBackgroundColor(ContextCompat.getColor(this, R.color.outside));
             geofenceStatusView.setText(R.string.geofence_outside);
         }
+    }
+
+    private void getCurrentMapLocation() {
+        LatLng latLng = mapController.getCurrentLocation();
+        latitudePrompt.setText(String.valueOf(latLng.latitude));
+        longitudePrompt.setText(String.valueOf(latLng.longitude));
     }
 
     private void validateEditFields() {
