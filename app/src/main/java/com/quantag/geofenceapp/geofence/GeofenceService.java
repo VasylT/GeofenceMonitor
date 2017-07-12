@@ -1,4 +1,4 @@
-package com.quantag.geofenceapp;
+package com.quantag.geofenceapp.geofence;
 
 import android.app.IntentService;
 import android.content.Intent;
@@ -7,6 +7,8 @@ import android.util.Log;
 
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingEvent;
+import com.quantag.geofenceapp.utilities.Constants;
+import com.quantag.geofenceapp.R;
 
 /**
  * Listener for geofence transition changes.

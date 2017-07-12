@@ -15,6 +15,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -22,9 +23,16 @@ import android.widget.TextView;
 
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.model.LatLng;
-import com.quantag.geofenceapp.GeofenceEventsReceiver.IGeofenceEventsReceiver;
+import com.quantag.geofenceapp.connectivity.ConnectivityController;
+import com.quantag.geofenceapp.connectivity.ConnectivityEventsReceiver;
+import com.quantag.geofenceapp.connectivity.ConnectivityEventsReceiver.IConnectivityReceiver;
+import com.quantag.geofenceapp.geofence.GeofenceController;
+import com.quantag.geofenceapp.geofence.GeofenceEventsReceiver;
+import com.quantag.geofenceapp.geofence.GeofenceEventsReceiver.IGeofenceEventsReceiver;
+import com.quantag.geofenceapp.utilities.Constants;
+import com.quantag.geofenceapp.utilities.Utils;
 
-public class MainActivity extends AppCompatActivity implements IGeofenceEventsReceiver {
+public class MainActivity extends AppCompatActivity implements IGeofenceEventsReceiver, IConnectivityReceiver {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
@@ -40,11 +48,14 @@ public class MainActivity extends AppCompatActivity implements IGeofenceEventsRe
     private TextView             geofenceSetHintView;
     private TextView             locationSetHintView;
 
-    private boolean isMenuOpened = false;
+    private boolean isMenuOpened  = false;
     private boolean isMenuOpening = false;
 
-    private GeofenceController geofenceController;
-    private GeofenceEventsReceiver geofenceEventsReceiver = new GeofenceEventsReceiver(this);
+    private GeofenceController     geofenceController;
+    private ConnectivityController connectivityController;
+
+    private GeofenceEventsReceiver     geoEventsReceiver  = new GeofenceEventsReceiver(this);
+    private ConnectivityEventsReceiver connEventsReceiver = new ConnectivityEventsReceiver(this);
 
     private MapController mapController;
 
@@ -64,7 +75,7 @@ public class MainActivity extends AppCompatActivity implements IGeofenceEventsRe
         geofenceSetHintView = (TextView) findViewById(R.id.set_geofence_hint_view);
         locationSetHintView = (TextView) findViewById(R.id.set_location_hint_view);
         FloatingActionButton menuButton = (FloatingActionButton) findViewById(R.id.menu_button);
-        MapView mapView = (MapView)  findViewById(R.id.map_view);
+        MapView mapView = (MapView) findViewById(R.id.map_view);
 
         latitudeLayout.setErrorEnabled(true);
         longitudeLayout.setErrorEnabled(true);
@@ -77,7 +88,6 @@ public class MainActivity extends AppCompatActivity implements IGeofenceEventsRe
         geofenceSetButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getCurrentMapLocation();
                 validateEditFields();
             }
         });
@@ -115,8 +125,9 @@ public class MainActivity extends AppCompatActivity implements IGeofenceEventsRe
             }
         });
 
-        geofenceController = new GeofenceController(this);
         mapController = new MapController(this, mapView);
+        geofenceController = new GeofenceController(this);
+        connectivityController = new ConnectivityController(this);
     }
 
     @Override
@@ -134,14 +145,17 @@ public class MainActivity extends AppCompatActivity implements IGeofenceEventsRe
     @Override
     public void onResume() {
         super.onResume();
-        geofenceEventsReceiver.register(this);
+        geoEventsReceiver.register(this);
+        connEventsReceiver.register(this);
         mapController.onResume();
+        connectivityController.startServiceIfNeeded();
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        geofenceEventsReceiver.unregister(this);
+        geoEventsReceiver.unregister(this);
+        connEventsReceiver.unregister(this);
         mapController.onPause();
     }
 
@@ -165,6 +179,16 @@ public class MainActivity extends AppCompatActivity implements IGeofenceEventsRe
     @Override
     public void onExitGeofence() {
         toggleGeofenceStatus(false);
+    }
+
+    @Override
+    public void onConnected(String extraInfo) {
+        Log.i(TAG, "network connected to: " + extraInfo);
+    }
+
+    @Override
+    public void onDisconnected() {
+        Log.i(TAG, "network disconnected");
     }
 
     private void openMenu() {

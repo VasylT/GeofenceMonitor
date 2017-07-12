@@ -1,4 +1,4 @@
-package com.quantag.geofenceapp;
+package com.quantag.geofenceapp.connectivity;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -6,17 +6,21 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.support.v4.content.LocalBroadcastManager;
 
-public class GeofenceEventsReceiver extends BroadcastReceiver {
+import com.quantag.geofenceapp.utilities.Constants;
+
+public class ConnectivityEventsReceiver extends BroadcastReceiver {
+
     private boolean isRegistered = false;
 
-    public interface IGeofenceEventsReceiver {
-        void onEnterGeofence();
-        void onExitGeofence();
+    public interface IConnectivityReceiver {
+        void onConnected(String extraInfo);
+
+        void onDisconnected();
     }
 
-    private IGeofenceEventsReceiver mListener;
+    private IConnectivityReceiver mListener;
 
-    public GeofenceEventsReceiver(IGeofenceEventsReceiver listener) {
+    public ConnectivityEventsReceiver(IConnectivityReceiver listener) {
         mListener = listener;
     }
 
@@ -25,11 +29,12 @@ public class GeofenceEventsReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         int message = intent.getIntExtra(Constants.ARG_MESSAGE, 0);
         switch (message) {
-            case Constants.MSG_ENTER:
-                mListener.onEnterGeofence();
+            case Constants.MSG_CONNECTED:
+                String extraInfo = intent.getStringExtra(Constants.ARG_STRING);
+                mListener.onConnected(extraInfo);
                 break;
-            case Constants.MSG_EXIT:
-                mListener.onExitGeofence();
+            case Constants.MSG_DISCONNECTED:
+                mListener.onDisconnected();
                 break;
             default:
         }
@@ -37,7 +42,7 @@ public class GeofenceEventsReceiver extends BroadcastReceiver {
 
     public void register(Context context) {
         if (!isRegistered) {
-            IntentFilter filter = new IntentFilter(Constants.ACTION_GEOFENCE);
+            IntentFilter filter = new IntentFilter(Constants.ACTION_CONNECTIVITY);
             LocalBroadcastManager.getInstance(context).registerReceiver(this, filter);
             isRegistered = true;
         }

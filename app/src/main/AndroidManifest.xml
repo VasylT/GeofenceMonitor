@@ -4,6 +4,8 @@
     package="com.quantag.geofenceapp">
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
 
     <application
         android:allowBackup="true"
@@ -31,7 +33,9 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".GeofenceService"/>
+        <service android:name=".connectivity.ConnectivityMonitorService"/>
+
+        <service android:name=".geofence.GeofenceService"/>
     </application>
 
 </manifest>
