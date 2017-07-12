@@ -34,8 +34,14 @@ public class MainActivity extends AppCompatActivity implements IGeofenceEventsRe
     private TextInputEditText    latitudePrompt;
     private TextInputEditText    longitudePrompt;
     private TextInputEditText    radiusPrompt;
-    private FloatingActionButton geofenceSetButton;
     private TextView             geofenceStatusView;
+    private FloatingActionButton geofenceSetButton;
+    private FloatingActionButton locationGetButton;
+    private TextView             geofenceSetHintView;
+    private TextView             locationSetHintView;
+
+    private boolean isMenuOpened = false;
+    private boolean isMenuOpening = false;
 
     private GeofenceController geofenceController;
     private GeofenceEventsReceiver geofenceEventsReceiver = new GeofenceEventsReceiver(this);
@@ -52,8 +58,12 @@ public class MainActivity extends AppCompatActivity implements IGeofenceEventsRe
         latitudePrompt = (TextInputEditText) findViewById(R.id.latitude_prompt);
         longitudePrompt = (TextInputEditText) findViewById(R.id.longitude_prompt);
         radiusPrompt = (TextInputEditText) findViewById(R.id.radius_prompt);
-        geofenceSetButton = (FloatingActionButton) findViewById(R.id.set_geofence_button);
         geofenceStatusView = (TextView) findViewById(R.id.geofence_status_view);
+        geofenceSetButton = (FloatingActionButton) findViewById(R.id.set_geofence_button);
+        locationGetButton = (FloatingActionButton) findViewById(R.id.get_location_button);
+        geofenceSetHintView = (TextView) findViewById(R.id.set_geofence_hint_view);
+        locationSetHintView = (TextView) findViewById(R.id.set_location_hint_view);
+        FloatingActionButton menuButton = (FloatingActionButton) findViewById(R.id.menu_button);
         MapView mapView = (MapView)  findViewById(R.id.map_view);
 
         latitudeLayout.setErrorEnabled(true);
@@ -69,6 +79,28 @@ public class MainActivity extends AppCompatActivity implements IGeofenceEventsRe
             public void onClick(View v) {
                 getCurrentMapLocation();
                 validateEditFields();
+            }
+        });
+
+        locationGetButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getCurrentMapLocation();
+            }
+        });
+
+        menuButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!isMenuOpening) {
+                    isMenuOpening = true;
+                    if (!isMenuOpened) {
+                        openMenu();
+                    } else {
+                        closeMenu();
+                    }
+                    isMenuOpening = false;
+                }
             }
         });
 
@@ -133,6 +165,40 @@ public class MainActivity extends AppCompatActivity implements IGeofenceEventsRe
     @Override
     public void onExitGeofence() {
         toggleGeofenceStatus(false);
+    }
+
+    private void openMenu() {
+        isMenuOpened = true;
+        float geofenceRange = -getResources().getDimension(R.dimen.geofence_fab_transition_height);
+        float locationRange = -getResources().getDimension(R.dimen.location_fab_transition_height);
+
+        // Animate FABs
+        geofenceSetButton.animate().translationY(geofenceRange);
+        locationGetButton.animate().translationY(locationRange);
+
+        // Animate hint views
+        geofenceSetHintView.animate().translationY(geofenceRange);
+        locationSetHintView.animate().translationY(locationRange);
+        geofenceSetHintView.animate().alpha(1.0f);
+        locationSetHintView.animate().alpha(1.0f);
+        geofenceSetHintView.setVisibility(View.VISIBLE);
+        locationSetHintView.setVisibility(View.VISIBLE);
+    }
+
+    private void closeMenu() {
+        isMenuOpened = false;
+
+        // Animate FABs
+        geofenceSetButton.animate().translationY(0);
+        locationGetButton.animate().translationY(0);
+
+        // Animate hint views
+        geofenceSetHintView.animate().translationY(0);
+        locationSetHintView.animate().translationY(0);
+        geofenceSetHintView.animate().alpha(0.0f);
+        locationSetHintView.animate().alpha(0.0f);
+        geofenceSetHintView.setVisibility(View.GONE);
+        locationSetHintView.setVisibility(View.GONE);
     }
 
     private void toggleGeofenceButton(boolean enable) {

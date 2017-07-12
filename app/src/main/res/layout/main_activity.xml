@@ -12,7 +12,44 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
-        android:src="@drawable/ic_done_white_24dp"
+        android:backgroundTint="@color/colorPrimaryLight"
+        android:src="@drawable/ic_geofence_white_24px"
+        app:borderWidth="0dp"
+        app:fabSize="mini"
+        app:layout_constraintBottom_toTopOf="@+id/shadow_view"
+        app:layout_constraintLeft_toLeftOf="@+id/menu_button"
+        app:layout_constraintRight_toRightOf="@+id/menu_button"
+        app:layout_constraintTop_toTopOf="@+id/shadow_view"
+        app:layout_constraintVertical_bias="0.5"
+        tools:ignore="UnusedAttribute"
+        tools:translationY="@dimen/geofence_fab_transition_height"/>
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/get_location_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:backgroundTint="@color/colorAccentDark"
+        android:src="@drawable/ic_edit_location_white_24dp"
+        app:borderWidth="0dp"
+        app:fabSize="mini"
+        app:layout_constraintBottom_toTopOf="@+id/shadow_view"
+        app:layout_constraintLeft_toLeftOf="@+id/menu_button"
+        app:layout_constraintRight_toRightOf="@+id/menu_button"
+        app:layout_constraintTop_toTopOf="@+id/shadow_view"
+        app:layout_constraintVertical_bias="0.5"
+        tools:ignore="UnusedAttribute"
+        tools:translationY="@dimen/location_fab_transition_height"/>
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/menu_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:src="@drawable/ic_touch_app_white_48dp"
+        app:fabSize="normal"
         app:layout_constraintBottom_toTopOf="@+id/shadow_view"
         app:layout_constraintRight_toRightOf="@+id/shadow_view"
         app:layout_constraintTop_toTopOf="@+id/shadow_view"
@@ -45,8 +82,8 @@
         android:text="@string/geofence_outside"
         android:textAlignment="gravity"
         android:textAllCaps="true"
-        android:textStyle="bold"
         android:textSize="18sp"
+        android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/latitude_layout"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"/>
@@ -130,5 +167,45 @@
             android:textSize="16sp"/>
 
     </android.support.design.widget.TextInputLayout>
+
+    <TextView
+        android:id="@+id/set_location_hint_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/fab_hint_margin"
+        android:layout_marginRight="@dimen/fab_hint_margin"
+        android:alpha="0.0"
+        android:background="@color/hint_view_bg"
+        android:padding="@dimen/fab_hint_padding"
+        android:text="@string/get_location"
+        android:textAllCaps="true"
+        android:textSize="@dimen/fab_hint_text_size"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/get_location_button"
+        app:layout_constraintRight_toLeftOf="@+id/get_location_button"
+        app:layout_constraintTop_toTopOf="@+id/get_location_button"
+        tools:alpha="1.0"
+        tools:translationY="@dimen/location_fab_transition_height"
+        tools:visibility="visible"/>
+
+    <TextView
+        android:id="@+id/set_geofence_hint_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/fab_hint_margin"
+        android:layout_marginRight="@dimen/fab_hint_margin"
+        android:alpha="0.0"
+        android:background="@color/hint_view_bg"
+        android:padding="@dimen/fab_hint_padding"
+        android:text="@string/set_geofence"
+        android:textAllCaps="true"
+        android:textSize="@dimen/fab_hint_text_size"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/set_geofence_button"
+        app:layout_constraintRight_toLeftOf="@+id/set_geofence_button"
+        app:layout_constraintTop_toTopOf="@+id/set_geofence_button"
+        tools:alpha="1.0"
+        tools:translationY="@dimen/geofence_fab_transition_height"
+        tools:visibility="visible"/>
 
 </android.support.constraint.ConstraintLayout>

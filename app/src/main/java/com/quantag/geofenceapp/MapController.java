@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.location.Location;
 import android.os.Handler;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -67,46 +68,59 @@ public class MapController {
         }
     }
 
+    /**
+     * Asynchronously initialize google maps and load it to {@link mapView}.
+     */
     public void initializeMap() {
-        getLastLocation();
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    mapView.onCreate(null);
-                } catch (Exception e) {
-                    // Though exception occurred, maps were pre-loaded.
-                }
-                new Handler(context.getMainLooper()).post(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (mapView != null) {
-                            try {
-                                // Load maps completely.
-                                mapView.onCreate(null);
-                                // Initialize map and set map ready observer.
-                                MapsInitializer.initialize(context);
-                                mapView.getMapAsync(new OnMapReadyCallback() {
-                                    @Override
-                                    public void onMapReady(GoogleMap googleMap) {
-                                        initGoogleMap(googleMap);
+        if (!isMapInitialized) {
+            restoreLastLocation();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        mapView.onCreate(null);
+                    } catch (Exception e) {
+                        // Though exception occurred, maps were pre-loaded.
+                    }
+                    new Handler(context.getMainLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (mapView != null) {
+                                try {
+                                    // Load maps completely.
+                                    mapView.onCreate(null);
+                                    // Initialize map and set map ready observer.
+                                    MapsInitializer.initialize(context);
+                                    mapView.getMapAsync(new OnMapReadyCallback() {
+                                        @Override
+                                        public void onMapReady(GoogleMap googleMap) {
+                                            initGoogleMap(googleMap);
+                                        }
+                                    });
+                                    isMapInitialized = true;
+                                    // Initialization may took time — call onResume manually.
+                                    if (isResumeCalled) {
+                                        mapView.onResume();
                                     }
-                                });
-                                isMapInitialized = true;
-                                // Initialization may took time — call onResume manually.
-                                if (isResumeCalled) {
-                                    mapView.onResume();
+                                } catch (Exception e) {
+                                    mapView.setBackgroundColor(ContextCompat.getColor(context,
+                                            android.R.color.darker_gray));
                                 }
-                            } catch (Exception e) {
-                                // TODO: display some placeholder
                             }
                         }
-                    }
-                });
-            }
-        }).start();
+                    });
+                }
+            }).start();
+        } else {
+            Log.i(TAG, "Map is already initialized");
+        }
     }
 
+    /**
+     * Get current location of the marker, save it to shared preferences.
+     *
+     * @return latitude plus longitude
+     */
     public LatLng getCurrentLocation() {
         if (isMapInitialized) {
             latitude = markerLocation.getLatitude();
@@ -201,7 +215,8 @@ public class MapController {
             });
         } else {
             Toast.makeText(context, R.string.google_play_services_error, Toast.LENGTH_SHORT).show();
-            // TODO: display some placeholder
+            mapView.setBackgroundColor(ContextCompat.getColor(context,
+                    android.R.color.darker_gray));
         }
     }
 
@@ -222,7 +237,10 @@ public class MapController {
         }
     }
 
-    private void getLastLocation() {
+    /**
+     * Get the last pointed location from shared preferences and saves its coordinates.
+     */
+    private void restoreLastLocation() {
         sPrefs = context.getSharedPreferences(Constants.PREFS, Context.MODE_PRIVATE);
         latitude = sPrefs.getFloat(Constants.ARG_LAT, (float) Constants.DEFAULT_LAT);
         longitude = sPrefs.getFloat(Constants.ARG_LON, (float) Constants.DEFAULT_LON);

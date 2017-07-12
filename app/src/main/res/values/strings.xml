@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">GeofenceApp</string>
 
+    <string name="get_location">Get marker location</string>
     <string name="set_geofence">Set geofence</string>
     <string name="geofences_set">Geofences set</string>
 
