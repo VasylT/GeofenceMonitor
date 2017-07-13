@@ -14,7 +14,7 @@ public class ConnectivityReceiver extends BroadcastReceiver {
     ConnectivityManager mConnectivityManager;
     IConnectivity       mCallback;
 
-    public interface IConnectivity {
+    interface IConnectivity {
         void onConnected(NetworkInfo networkInfo);
 
         void onDisconnected();

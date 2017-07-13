@@ -22,7 +22,6 @@ public class GeofenceEventsReceiver extends BroadcastReceiver {
         mListener = listener;
     }
 
-
     @Override
     public void onReceive(Context context, Intent intent) {
         int message = intent.getIntExtra(Constants.ARG_MESSAGE, 0);

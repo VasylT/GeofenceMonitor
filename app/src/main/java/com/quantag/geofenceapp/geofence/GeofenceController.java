@@ -3,7 +3,6 @@ package com.quantag.geofenceapp.geofence;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.widget.Toast;
@@ -14,11 +13,14 @@ import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.quantag.geofenceapp.utilities.Constants;
 import com.quantag.geofenceapp.R;
+import com.quantag.geofenceapp.utilities.Constants;
 
 import java.util.ArrayList;
 
+/**
+ * Controller used to instantiate and delete geofence areas.
+ */
 public class GeofenceController {
 
     private static final String TAG = GeofenceController.class.getSimpleName();
@@ -27,14 +29,12 @@ public class GeofenceController {
     private GeofencingClient    mGeofencingClient;
     private ArrayList<Geofence> mGeofenceList;
     private PendingIntent       mGeofencePendingIntent;
-    private SharedPreferences   sPrefs;
 
     public GeofenceController(Context context) {
         mContext = context;
         mGeofenceList = new ArrayList<>();
         mGeofencingClient = LocationServices.getGeofencingClient(context);
         mGeofencePendingIntent = null;
-        sPrefs = context.getSharedPreferences(Constants.PREFS, Context.MODE_PRIVATE);
     }
 
     /**

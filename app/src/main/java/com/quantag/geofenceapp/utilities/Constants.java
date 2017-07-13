@@ -21,6 +21,7 @@ public class Constants {
     public static final String ARG_WIFI_NAME       = "arg.wifi.name";
     public static final String ARG_WIFI_ADDED      = "arg.wifi.added";
     public static final String ARG_WIFI_CONNECTED  = "arg.wifi.connected";
+
     public static final int    MSG_ENTER           = 201;
     public static final int    MSG_EXIT            = 202;
     public static final int    MSG_CONNECTED       = 203;

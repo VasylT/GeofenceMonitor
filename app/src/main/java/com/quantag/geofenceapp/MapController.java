@@ -20,7 +20,10 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.quantag.geofenceapp.utilities.Constants;
 
-public class MapController {
+/**
+ * Controller used for displaying google map and managing marker position.
+ */
+class MapController {
 
     private static final String TAG = MapController.class.getSimpleName();
 
@@ -38,33 +41,33 @@ public class MapController {
     private boolean isMapInitialized;
     private boolean isResumeCalled;
 
-    public MapController(Context context, MapView mapView) {
+    MapController(Context context, MapView mapView) {
         this.context = context;
         this.mapView = mapView;
         sPrefs = context.getSharedPreferences(Constants.PREFS, Context.MODE_PRIVATE);
     }
 
-    public void onResume() {
+    void onResume() {
         if (mapView != null && isMapInitialized) {
             mapView.onResume();
         }
         isResumeCalled = true;
     }
 
-    public void onPause() {
+    void onPause() {
         if (mapView != null && isMapInitialized) {
             mapView.onPause();
         }
         isResumeCalled = false;
     }
 
-    public void onLowMemory() {
+    void onLowMemory() {
         if (mapView != null && isMapInitialized) {
             mapView.onLowMemory();
         }
     }
 
-    public void onDestroy() {
+    void onDestroy() {
         if (mapView != null && isMapInitialized) {
             mapView.onDestroy();
         }
@@ -73,7 +76,7 @@ public class MapController {
     /**
      * Asynchronously initialize google maps and load it to {@link mapView}.
      */
-    public void initializeMap() {
+    void initializeMap() {
         if (!isMapInitialized) {
             restoreLastLocation();
             new Thread(new Runnable() {
@@ -123,7 +126,7 @@ public class MapController {
      *
      * @return latitude plus longitude
      */
-    public LatLng getCurrentLocation() {
+    LatLng getCurrentLocation() {
         if (isMapInitialized) {
             latitude = markerLocation.getLatitude();
             longitude = markerLocation.getLongitude();

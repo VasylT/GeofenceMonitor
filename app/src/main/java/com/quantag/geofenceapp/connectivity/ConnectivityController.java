@@ -6,30 +6,32 @@ import android.net.wifi.WifiManager;
 
 import com.quantag.geofenceapp.StateHolder;
 
+/**
+ * Controller used for managing connectivity service and choosing wifi spot.
+ */
 public class ConnectivityController {
 
-    private Context           mContext;
-    private ServiceManager    serviceManager;
+    private Context        mContext;
+    private ServiceManager mServiceManager;
 
     public ConnectivityController(Context context) {
         mContext = context;
-        if (serviceManager == null) {
-            serviceManager = new ServiceManager(context);
+        if (mServiceManager == null) {
+            mServiceManager = new ServiceManager(context);
         }
-
     }
 
     public void startServiceIfNeeded() {
-        if (serviceManager != null) {
-            if (!serviceManager.isServiceStarted()) {
-                serviceManager.startService();
+        if (mServiceManager != null) {
+            if (!mServiceManager.isServiceStarted()) {
+                mServiceManager.startService();
             }
         }
     }
 
     public void stopService() {
-        if (serviceManager != null) {
-            serviceManager.stopService();
+        if (mServiceManager != null) {
+            mServiceManager.stopService();
         }
     }
 
