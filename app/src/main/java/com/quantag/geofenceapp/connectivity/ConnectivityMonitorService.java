@@ -11,6 +11,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
+import com.quantag.geofenceapp.StateHolder;
 import com.quantag.geofenceapp.utilities.Constants;
 
 public class ConnectivityMonitorService extends Service {
@@ -19,24 +20,31 @@ public class ConnectivityMonitorService extends Service {
 
     private final IBinder mBinder = new Binder();
 
-    ConnectivityReceiver mConnectivityReceiver;
+    private ConnectivityReceiver mConnectivityReceiver;
+    private StateHolder          stateHolder;
 
     @Override
     public void onCreate() {
         Log.d(TAG, "onCreate");
         super.onCreate();
 
+        // Initialize user state controller.
+        stateHolder = new StateHolder(this);
+
         // Create connectivity receiver.
         mConnectivityReceiver = new ConnectivityReceiver(this, new ConnectivityReceiver.IConnectivity() {
             @Override
             public void onConnected(NetworkInfo networkInfo) {
                 Log.d(TAG, "on connected");
-                sendCallback(Constants.MSG_CONNECTED, networkInfo.getExtraInfo());
+                String networkName = networkInfo.getExtraInfo();
+                boolean isNewWiFi = stateHolder.onConnected(networkName);
+                sendCallback(Constants.MSG_CONNECTED, networkName, isNewWiFi);
             }
 
             @Override
             public void onDisconnected() {
                 Log.d(TAG, "on disconnected");
+                stateHolder.onDisconnected();
                 sendCallback(Constants.MSG_DISCONNECTED);
             }
         });
@@ -64,15 +72,18 @@ public class ConnectivityMonitorService extends Service {
     }
 
     private void sendCallback(int message) {
-        sendCallback(message, null);
+        Intent intent = new Intent(Constants.ACTION_CONNECTIVITY);
+        intent.putExtra(Constants.ARG_MESSAGE, message);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
-    private void sendCallback(int message, String stringExtra) {
+    private void sendCallback(int message, String stringExtra, boolean booleanExtra) {
         Intent intent = new Intent(Constants.ACTION_CONNECTIVITY);
         intent.putExtra(Constants.ARG_MESSAGE, message);
         if (stringExtra != null) {
             intent.putExtra(Constants.ARG_STRING, stringExtra);
         }
+        intent.putExtra(Constants.ARG_BOOLEAN, booleanExtra);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 }

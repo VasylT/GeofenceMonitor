@@ -56,6 +56,7 @@ public class MainActivity extends AppCompatActivity implements IGeofenceEventsRe
 
     private GeofenceController     geofenceController;
     private ConnectivityController connectivityController;
+    private StateHolder            stateHolder;
 
     private GeofenceEventsReceiver     geoEventsReceiver  = new GeofenceEventsReceiver(this);
     private ConnectivityEventsReceiver connEventsReceiver = new ConnectivityEventsReceiver(this);
@@ -66,6 +67,7 @@ public class MainActivity extends AppCompatActivity implements IGeofenceEventsRe
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity);
+
         latitudeLayout = (TextInputLayout) findViewById(R.id.latitude_layout);
         longitudeLayout = (TextInputLayout) findViewById(R.id.longitude_layout);
         radiusLayout = (TextInputLayout) findViewById(R.id.radius_layout);
@@ -88,9 +90,7 @@ public class MainActivity extends AppCompatActivity implements IGeofenceEventsRe
         longitudeLayout.setErrorEnabled(true);
         radiusLayout.setErrorEnabled(true);
 
-        // Display default geofence coordinates.
-        latitudePrompt.setText(String.valueOf(Constants.DEFAULT_LAT));
-        longitudePrompt.setText(String.valueOf(Constants.DEFAULT_LON));
+        // Display default geofence values.
         radiusPrompt.setText(String.valueOf(Constants.DEFAULT_RADIUS));
 
         geofenceSetButton.setOnClickListener(new View.OnClickListener() {
@@ -141,12 +141,13 @@ public class MainActivity extends AppCompatActivity implements IGeofenceEventsRe
         });
 
         // Init controllers.
+        stateHolder = new StateHolder(this);
         mapController = new MapController(this, mapView);
         geofenceController = new GeofenceController(this);
         connectivityController = new ConnectivityController(this);
 
         // Display wifi name.
-        String wifiName = connectivityController.getGeofenceWiFiName();
+        String wifiName = stateHolder.getGeofenceWiFiName();
         displayWiFiName(wifiName);
     }
 
@@ -165,6 +166,7 @@ public class MainActivity extends AppCompatActivity implements IGeofenceEventsRe
     @Override
     public void onResume() {
         super.onResume();
+        Log.i(TAG, "onResume");
         mapController.onResume();
         geoEventsReceiver.register(this);
         connEventsReceiver.register(this);
@@ -175,6 +177,7 @@ public class MainActivity extends AppCompatActivity implements IGeofenceEventsRe
     @Override
     public void onPause() {
         super.onPause();
+        Log.i(TAG, "onPause");
         geoEventsReceiver.unregister(this);
         connEventsReceiver.unregister(this);
         mapController.onPause();
@@ -195,21 +198,18 @@ public class MainActivity extends AppCompatActivity implements IGeofenceEventsRe
     @Override
     public void onEnterGeofence() {
         Log.i(TAG, "enter geofence");
-        geofenceController.setInsideStatus(true);
         considerGeofenceStatus();
     }
 
     @Override
     public void onExitGeofence() {
         Log.i(TAG, "exit geofence");
-        geofenceController.setInsideStatus(false);
         considerGeofenceStatus();
     }
 
     @Override
-    public void onConnected(String extraInfo) {
+    public void onConnected(String extraInfo, boolean isNewWiFi) {
         Log.i(TAG, "network connected to: " + extraInfo);
-        boolean isNewWiFi = connectivityController.onConnected(extraInfo);
         if (isNewWiFi) {
             displayWiFiName(extraInfo);
         }
@@ -219,14 +219,13 @@ public class MainActivity extends AppCompatActivity implements IGeofenceEventsRe
     @Override
     public void onDisconnected() {
         Log.i(TAG, "network disconnected");
-        connectivityController.onDisconnected();
         considerGeofenceStatus();
     }
 
     private void considerGeofenceStatus() {
-        Log.i(TAG, "consider connected: " + connectivityController.isConnected()
-                + " inside: " + geofenceController.isInside());
-        boolean isInside = connectivityController.isConnected() || geofenceController.isInside();
+        Log.i(TAG, "consider connected: " + stateHolder.isConnected()
+                + " inside: " + stateHolder.isInside());
+        boolean isInside = stateHolder.isConnected() || stateHolder.isInside();
         toggleGeofenceStatus(isInside);
     }
 
@@ -306,7 +305,8 @@ public class MainActivity extends AppCompatActivity implements IGeofenceEventsRe
                 && checkEditField(radiusPrompt, radiusLayout);
         if (isValid) {
             // Reset location status to 'outside'
-            toggleGeofenceStatus(false);
+            stateHolder.setInsideStatus(false);
+            considerGeofenceStatus();
 
             // Update geofence with new values.
             double latitude = Double.valueOf(latitudePrompt.getText().toString());

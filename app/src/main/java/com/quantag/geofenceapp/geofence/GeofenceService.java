@@ -7,6 +7,7 @@ import android.util.Log;
 
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingEvent;
+import com.quantag.geofenceapp.StateHolder;
 import com.quantag.geofenceapp.utilities.Constants;
 import com.quantag.geofenceapp.R;
 
@@ -17,8 +18,16 @@ public class GeofenceService extends IntentService {
 
     private static final String TAG = GeofenceService.class.getSimpleName();
 
+    private StateHolder stateHolder;
+
     public GeofenceService() {
         super(TAG);
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        stateHolder = new StateHolder(this);
     }
 
     /**
@@ -31,9 +40,9 @@ public class GeofenceService extends IntentService {
         if (!geofencingEvent.hasError()) {
             int geofenceTransition = geofencingEvent.getGeofenceTransition();
             if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER) {
-                sendCallback(Constants.MSG_ENTER);
+                onEnterGeofence();
             } else if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_EXIT) {
-                sendCallback(Constants.MSG_EXIT);
+                onExitGeofence();
             } else {
                 Log.e(TAG, getString(R.string.geofence_transition_invalid_type, geofenceTransition));
             }
@@ -41,6 +50,16 @@ public class GeofenceService extends IntentService {
             String errorMessage = GeofenceErrorMessages.getErrorString(this, geofencingEvent.getErrorCode());
             Log.e(TAG, errorMessage);
         }
+    }
+
+    private void onEnterGeofence() {
+        stateHolder.setInsideStatus(true);
+        sendCallback(Constants.MSG_ENTER);
+    }
+
+    private void onExitGeofence() {
+        stateHolder.setInsideStatus(false);
+        sendCallback(Constants.MSG_EXIT);
     }
 
     private void sendCallback(int message) {

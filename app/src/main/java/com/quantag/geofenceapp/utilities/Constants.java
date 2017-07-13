@@ -13,6 +13,7 @@ public class Constants {
     public static final String ACTION_CONNECTIVITY = "action.connectivity";
     public static final String ARG_MESSAGE         = "arg.message";
     public static final String ARG_STRING          = "arg.string";
+    public static final String ARG_BOOLEAN         = "arg.boolean";
     public static final String PREFS               = "map.preferences";
     public static final String ARG_LAT             = "arg.latitude";
     public static final String ARG_LON             = "arg.longitude";

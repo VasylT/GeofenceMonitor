@@ -13,7 +13,7 @@ public class ConnectivityEventsReceiver extends BroadcastReceiver {
     private boolean isRegistered = false;
 
     public interface IConnectivityReceiver {
-        void onConnected(String extraInfo);
+        void onConnected(String extraInfo, boolean isNewWiFi);
 
         void onDisconnected();
     }
@@ -31,7 +31,8 @@ public class ConnectivityEventsReceiver extends BroadcastReceiver {
         switch (message) {
             case Constants.MSG_CONNECTED:
                 String extraInfo = intent.getStringExtra(Constants.ARG_STRING);
-                mListener.onConnected(extraInfo);
+                boolean isNewWiFi = intent.getBooleanExtra(Constants.ARG_BOOLEAN, false);
+                mListener.onConnected(extraInfo, isNewWiFi);
                 break;
             case Constants.MSG_DISCONNECTED:
                 mListener.onDisconnected();

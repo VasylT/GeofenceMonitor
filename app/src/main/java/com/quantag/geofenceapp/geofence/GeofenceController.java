@@ -139,12 +139,4 @@ public class GeofenceController {
                     }
                 });
     }
-
-    public void setInsideStatus(boolean inside) {
-        sPrefs.edit().putBoolean(Constants.ARG_INSIDE_GEOFENCE, inside).apply();
-    }
-
-    public boolean isInside() {
-        return sPrefs.getBoolean(Constants.ARG_INSIDE_GEOFENCE, false);
-    }
 }
